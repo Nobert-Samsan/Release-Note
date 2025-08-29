@@ -1,0 +1,42 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
+  role     String
+  entries  Entry[]
+}
+
+model Entry {
+  id           Int           @id @default(autoincrement())
+  projectName  String
+  taskName     String
+  taskNo       String?  
+  description  String
+  deployedAt   DateTime? 
+  createdAt    DateTime     @default(now())
+  user         User          @relation(fields: [userId], references: [id])
+  userId       Int
+  files        FileChange[]
+}
+
+model FileChange {
+  id         Int     @id @default(autoincrement())
+  filename   String
+  codeBefore String @db.Text
+  codeAfter  String @db.Text
+  entry      Entry   @relation(fields: [entryId], references: [id])
+  entryId    Int
+}
