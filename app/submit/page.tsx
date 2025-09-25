@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -9,38 +10,48 @@ interface FileChange {
   codeAfter: string
 }
 
-export default function SubmitPage() {
+
+function SubmitPage({}: {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const entryId = searchParams.get('entryId')
 
   const [projectName, setProjectName] = useState('')
-    const [taskNo, setTaskNo] = useState('')
-const [taskName, setTaskName] = useState('')
+  const [taskNo, setTaskNo] = useState('')
+  const [taskName, setTaskName] = useState('')
   const [description, setDescription] = useState('')
-  const [files, setFiles] = useState<FileChange[]>([{ filename: '', codeBefore: '', codeAfter: '' }])
+  const [files, setFiles] = useState<FileChange[]>([
+    { filename: '', codeBefore: '', codeAfter: '' },
+  ])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (entryId) {
       fetch(`/api/entries/${entryId}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setProjectName(data.projectName || '')
           setTaskNo(data.taskNo || '')
           setTaskName(data.taskName || '')
           setDescription(data.description || '')
-          setFiles(data.files?.length > 0 ? data.files : [{ filename: '', codeBefore: '', codeAfter: '' }])
+          setFiles(
+            data.files?.length > 0
+              ? data.files
+              : [{ filename: '', codeBefore: '', codeAfter: '' }]
+          )
         })
     }
   }, [entryId])
 
   const addFile = () => {
-    setFiles(prev => [...prev, { filename: '', codeBefore: '', codeAfter: '' }])
+    setFiles((prev) => [
+      ...prev,
+      { filename: '', codeBefore: '', codeAfter: '' },
+    ])
   }
 
   const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index))
+    setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   const updateFile = (index: number, key: keyof FileChange, value: string) => {
@@ -51,14 +62,19 @@ const [taskName, setTaskName] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!projectName ||!taskNo || !taskName || files.some(f => !f.filename || !f.codeBefore || !f.codeAfter)) {
+    if (
+      !projectName ||
+      !taskNo ||
+      !taskName ||
+      files.some((f) => !f.filename || !f.codeBefore || !f.codeAfter)
+    ) {
       alert('Please fill all required fields.')
       return
     }
 
     setLoading(true)
 
-    const payload = { projectName,taskNo, taskName, description, files }
+    const payload = { projectName, taskNo, taskName, description, files }
     const method = entryId ? 'PUT' : 'POST'
     const endpoint = entryId ? `/api/entries/${entryId}` : '/api/entries'
 
@@ -77,7 +93,9 @@ const [taskName, setTaskName] = useState('')
 
   return (
     <div className="max-w-3xl mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">{entryId ? 'Edit Entry' : 'Submit Entry'}</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {entryId ? 'Edit Entry' : 'Submit Entry'}
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -100,9 +118,8 @@ const [taskName, setTaskName] = useState('')
             required
           />
         </div>
-       
 
-         <div>
+        <div>
           <label className="block text-sm font-medium">Task Name</label>
           <input
             type="text"
@@ -114,7 +131,9 @@ const [taskName, setTaskName] = useState('')
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Description (optional)</label>
+          <label className="block text-sm font-medium">
+            Description (optional)
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -125,13 +144,18 @@ const [taskName, setTaskName] = useState('')
 
         <div className="space-y-4">
           {files.map((file, index) => (
-            <div key={index} className="border p-4 rounded space-y-2 bg-gray-50 relative">
+            <div
+              key={index}
+              className="border p-4 rounded space-y-2 bg-gray-50 relative"
+            >
               <div>
                 <label className="block text-sm font-medium">Filename</label>
                 <input
                   type="text"
                   value={file.filename}
-                  onChange={(e) => updateFile(index, 'filename', e.target.value)}
+                  onChange={(e) =>
+                    updateFile(index, 'filename', e.target.value)
+                  }
                   className="border px-2 py-1 w-full rounded"
                   required
                 />
@@ -140,17 +164,21 @@ const [taskName, setTaskName] = useState('')
                 <label className="block text-sm font-medium">Code Before</label>
                 <textarea
                   value={file.codeBefore}
-                  onChange={(e) => updateFile(index, 'codeBefore', e.target.value)}
+                  onChange={(e) =>
+                    updateFile(index, 'codeBefore', e.target.value)
+                  }
                   className="border px-2 py-1 w-full rounded"
                   rows={25}
                   required
-                /> 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium">Code After</label>
                 <textarea
                   value={file.codeAfter}
-                  onChange={(e) => updateFile(index, 'codeAfter', e.target.value)}
+                  onChange={(e) =>
+                    updateFile(index, 'codeAfter', e.target.value)
+                  }
                   className="border px-2 py-1 w-full rounded"
                   rows={25}
                   required
@@ -169,7 +197,11 @@ const [taskName, setTaskName] = useState('')
           ))}
         </div>
 
-        <button type="button" onClick={addFile} className="border border-dashed px-4 py-2 rounded text-sm">
+        <button
+          type="button"
+          onClick={addFile}
+          className="border border-dashed px-4 py-2 rounded text-sm"
+        >
           + Add File
         </button>
 
@@ -182,5 +214,13 @@ const [taskName, setTaskName] = useState('')
         </button>
       </form>
     </div>
+  )
+}
+
+export default function SubmitPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading form...</div>}>
+      <SubmitPage />
+    </Suspense>
   )
 }
